@@ -710,7 +710,7 @@ function _sd__setup {
    : "${SD__INTERN[mysd]:="0"}"
    : "${SD__INTERN[mysdset]:="0"}"
    : "${SD__INTERN[sleep]:="0.01"}"
-   : "${SD__INTERN[version]:="SD v3.1-78285cd6"}"
+   : "${SD__INTERN[version]:="SD v3.1-98157353"}"
 
    typeset -i failure=0
    if [[ ${SD__LOGDIR} != /* ]]; then
@@ -1515,10 +1515,9 @@ unset -f _sd__setup
 typeset sd_oldIFS=$IFS
 IFS=' '
 # shellcheck disable=SC2086  # word splitting intended
-set -- ${SD__TRPSIG}
-IFS=$sd_oldIFS && unset sd_oldIFS
 # shellcheck disable=SC2064  # trap string intentionally fixed at definition time, not when signalled
-trap "${SD__TRPCMD}" 0 "$@"
+trap "${SD__TRPCMD}" 0 ${SD__TRPSIG}
+IFS=$sd_oldIFS && unset sd_oldIFS
 
 if ! command -v ds > /dev/null; then
    SD__INTERN[myds]=1 && function ds { _sd__dispatch "$@"; }

@@ -90,7 +90,7 @@ If no valid pathname is found, arguments are interpreted as a pattern:
 * Smart case: matching is case-insensitive unless the pattern contains
   uppercase characters.
 
-Shell metacharacters may require quoting (e.g., `'a\.b'`).
+Shell and/or Regex metacharacters may require quoting (e.g., `'a\.b'`).
 
 ---
 

